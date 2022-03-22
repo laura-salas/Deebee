@@ -5,9 +5,9 @@ from discord.utils import get
 
 ################################
 description = "Testing a feature that would allow for the use of discord channels as databases"
-TOKEN = 'token here'
-MOD_CHANNEL_ID = 000000
-DB_CHANNEL = 00000
+TOKEN = 'OTMzODExMTk0MzIwNTMxNDU4.Yem9cg.tUs_UCR3LF4Wsu5HPUgPlERh8po'
+REQ_CHANNEL = 802794891364270100
+DB_CHANNEL = 955692381460643880
 
 # discord stuff
 client = discord.Client()
@@ -21,9 +21,9 @@ bot = commands.Bot(command_prefix="$", description=description, intents=intents)
 # MESSAGES #
 
 # Reactions to verify user
-BOT_NAME = "DIRObot"
+BOT_NAME = "Deebee"
 
-COMMAND_DB = "db_select"
+COMMAND_DB = "db_query"
 
 
 ################################
@@ -45,10 +45,10 @@ async def db_select(table_id, row_id):
     # maybe in the future it doesn't have to be hardcoded here
     db_channel = client.get_channel(DB_CHANNEL)
 
-    content = ""
     async for message in db_channel.history(limit=200):
         if message.content.startswith(table_id):
             table = message.content[len(table_id) + 1:]
+
             try:
                 table = ast.literal_eval(table)
             except SyntaxError:
@@ -56,11 +56,16 @@ async def db_select(table_id, row_id):
                         message.content[len(table_id) + 1:]
 
             if type(table) is list:
-                table = [n.strip() for n in table]
+                if not all(type(x) == int for x in table):
+                    table = [str(n).strip() for n in table]
+
                 if row_id:
                     row_id = int(row_id)
                     if len(table) > row_id >= 0:
                         content = str(table[row_id])
+                    else:
+                        content = "ERROR WITH REQUEST: row number is bigger than table or" + \
+                                  " row number not specified for list type."
                 else:
                     content = "ERROR WITH REQUEST: row number is bigger than table or" + \
                               " row number not specified for list type."
@@ -101,16 +106,17 @@ async def db_parse_request(message):
 
 @client.event
 async def on_message(message):
-
     channel = message.channel
 
     if message.author == client.user:
         return
-    if message.channel.id == MOD_CHANNEL_ID:
+    if message.channel.id == REQ_CHANNEL:
         if message.content.startswith(COMMAND_DB):
             table_id, row_id = await db_parse_request(message)
-            content = await db_select(table_id, row_id)
-            await channel.send(content)
-
+            try:
+                content = await db_select(table_id, row_id)
+                await channel.send(content)
+            except UnboundLocalError:
+                await channel.send("Unknown error with command, probably check your syntax!")
 
 client.run(TOKEN)
