@@ -5,7 +5,7 @@ from discord.utils import get
 
 ################################
 description = "Testing a feature that would allow for the use of discord channels as databases"
-TOKEN = 'OTMzODExMTk0MzIwNTMxNDU4.Yem9cg.tUs_UCR3LF4Wsu5HPUgPlERh8po'
+TOKEN = ''
 REQ_CHANNEL = 802794891364270100
 DB_CHANNEL = 955692381460643880
 
